@@ -6,9 +6,7 @@ const USDToEURRate = 0.85
 const USDToRUBRate = 80.0
 const EURToRUBRate = USDToRUBRate / USDToEURRate
 
-func main() {
-
-}
+func main() {}
 
 func getUserInput() (string, string, float64) {
 	var inCurrency string
