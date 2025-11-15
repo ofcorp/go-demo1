@@ -1,10 +1,24 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-const USDToEURRate = 0.85
-const USDToRUBRate = 80.0
-const EURToRUBRate = USDToRUBRate / USDToEURRate
+var currencyRates = map[string]map[string]float64{
+	"USD": {
+		"EUR": 0.85,
+		"RUB": 80.0,
+	},
+	"EUR": {
+		"USD": 1.18,
+		"RUB": 94.0,
+	},
+	"RUB": {
+		"USD": 0.0125,
+		"EUR": 0.0106,
+	},
+}
 
 func main() {
 	fmt.Println("Конвертер валют")
@@ -23,15 +37,17 @@ func getUserInput() (string, string, float64) {
 	var inCurrency string
 	var outCurrency string
 	var amount float64
+
 	fmt.Print("Введите валюту, из которой хотите конвертировать (USD, EUR, RUB): ")
 	fmt.Scan(&inCurrency)
-	switch inCurrency {
-	case "USD", "EUR", "RUB":
-	default:
+
+	if _, ok := currencyRates[inCurrency]; !ok {
 		fmt.Println("Неверная валюта. Попробуйте снова.")
 		return getUserInput()
 	}
+
 	outCurrency = getOutCurrency(inCurrency)
+
 	fmt.Print("Введите сумму для конвертации: ")
 	fmt.Scan(&amount)
 	if amount <= 0 {
@@ -42,27 +58,15 @@ func getUserInput() (string, string, float64) {
 }
 
 func convertCurrency(inCurrency, outCurrency string, amount float64) float64 {
-	switch inCurrency {
-	case "USD":
-		if outCurrency == "EUR" {
-			return amount * USDToEURRate
-		} else if outCurrency == "RUB" {
-			return amount * USDToRUBRate
-		}
-	case "EUR":
-		if outCurrency == "USD" {
-			return amount / USDToEURRate
-		} else if outCurrency == "RUB" {
-			return amount * EURToRUBRate
-		}
-	case "RUB":
-		if outCurrency == "USD" {
-			return amount / USDToRUBRate
-		} else if outCurrency == "EUR" {
-			return amount / EURToRUBRate
-		}
+	rates, ok := currencyRates[inCurrency]
+	if !ok {
+		panic("внутренняя ошибка: неизвестная исходная валюта")
 	}
-	panic("внутренняя ошибка")
+	rate, ok := rates[outCurrency]
+	if !ok {
+		panic("внутренняя ошибка: недоступное направление конвертации")
+	}
+	return amount * rate
 }
 
 func askFinish() bool {
@@ -77,31 +81,21 @@ func askFinish() bool {
 
 func getOutCurrency(inCurrency string) string {
 	var outCurrency string
-	fmt.Print("Введите валюту, в которую хотите конвертировать ")
-	switch inCurrency {
-	case "USD":
-		fmt.Print("(EUR, RUB): ")
-		fmt.Scan(&outCurrency)
-		if outCurrency != "EUR" && outCurrency != "RUB" {
-			fmt.Println("Неверная валюта. Попробуйте снова.")
-			return getOutCurrency(inCurrency)
-		}
-	case "EUR":
-		fmt.Print("(RUB, USD): ")
-		fmt.Scan(&outCurrency)
-		if outCurrency != "RUB" && outCurrency != "USD" {
-			fmt.Println("Неверная валюта. Попробуйте снова.")
-			return getOutCurrency(inCurrency)
-		}
-	case "RUB":
-		fmt.Print("(USD, EUR): ")
-		fmt.Scan(&outCurrency)
-		if outCurrency != "USD" && outCurrency != "EUR" {
-			fmt.Println("Неверная валюта. Попробуйте снова.")
-			return getOutCurrency(inCurrency)
-		}
-	default:
-		panic("внутренняя ошибка")
+	targets := keys(currencyRates[inCurrency])
+	fmt.Printf("Введите валюту, в которую хотите конвертировать (%s): ", strings.Join(targets, ", "))
+	fmt.Scan(&outCurrency)
+
+	if _, ok := currencyRates[inCurrency][outCurrency]; !ok {
+		fmt.Println("Неверная валюта. Попробуйте снова.")
+		return getOutCurrency(inCurrency)
 	}
 	return outCurrency
+}
+
+func keys(m map[string]float64) []string {
+	res := make([]string, 0, len(m))
+	for k := range m {
+		res = append(res, k)
+	}
+	return res
 }
