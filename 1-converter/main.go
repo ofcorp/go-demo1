@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-var currencyRates = map[string]map[string]float64{
-	"USD": {
+var currencyRates = map[string]*map[string]float64{
+	"USD": &map[string]float64{
 		"EUR": 0.85,
 		"RUB": 80.0,
 	},
-	"EUR": {
+	"EUR": &map[string]float64{
 		"USD": 1.18,
 		"RUB": 94.0,
 	},
-	"RUB": {
+	"RUB": &map[string]float64{
 		"USD": 0.0125,
 		"EUR": 0.0106,
 	},
@@ -58,11 +58,11 @@ func getUserInput() (string, string, float64) {
 }
 
 func convertCurrency(inCurrency, outCurrency string, amount float64) float64 {
-	rates, ok := currencyRates[inCurrency]
-	if !ok {
+	ratesPtr, ok := currencyRates[inCurrency]
+	if !ok || ratesPtr == nil {
 		panic("внутренняя ошибка: неизвестная исходная валюта")
 	}
-	rate, ok := rates[outCurrency]
+	rate, ok := (*ratesPtr)[outCurrency]
 	if !ok {
 		panic("внутренняя ошибка: недоступное направление конвертации")
 	}
@@ -81,11 +81,16 @@ func askFinish() bool {
 
 func getOutCurrency(inCurrency string) string {
 	var outCurrency string
-	targets := keys(currencyRates[inCurrency])
+	ratesPtr, ok := currencyRates[inCurrency]
+	if !ok || ratesPtr == nil {
+		panic("внутренняя ошибка: неизвестная исходная валюта")
+	}
+
+	targets := keys(*ratesPtr)
 	fmt.Printf("Введите валюту, в которую хотите конвертировать (%s): ", strings.Join(targets, ", "))
 	fmt.Scan(&outCurrency)
 
-	if _, ok := currencyRates[inCurrency][outCurrency]; !ok {
+	if _, ok := (*ratesPtr)[outCurrency]; !ok {
 		fmt.Println("Неверная валюта. Попробуйте снова.")
 		return getOutCurrency(inCurrency)
 	}
