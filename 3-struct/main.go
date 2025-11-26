@@ -9,6 +9,8 @@ import (
 
 func main() {
 	bins.CreateBin("123456", true, "Personal Bin")
+	storage.SaveBins(bins.BinList)
+	storage.LoadBins("bins.json")
 }
 
 

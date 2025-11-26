@@ -3,19 +3,10 @@ package storage
 import (
 	"encoding/json"
 	"go-demo1/3-struct/file"
-	"time"
+	"go-demo1/3-struct/bins"
 )
 
-type Bin struct {
-	Id        string    `json:"id"`
-	Private   bool      `json:"private"`
-	CreatedAt time.Time `json:"created_at"`
-	Name      string    `json:"name"`
-}
-
-var BinList = []Bin{}
-
-func SaveBins(binList []Bin) error {
+func SaveBins(binList []bins.Bin) error {
 	data, err := json.Marshal(binList)
 	if err != nil {
 		return err
@@ -30,6 +21,6 @@ func LoadBins(name string) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(data, &BinList)
+	err = json.Unmarshal(data, &bins.BinList)
 	return err
 }
