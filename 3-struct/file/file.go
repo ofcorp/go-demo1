@@ -8,12 +8,20 @@ import (
 	"path/filepath"
 )
 
-func ReadFile(name string) ([]byte, error) {
-	if filepath.Ext(name) != ".json" {
+type FileStore struct{
+	filename string
+}
+
+func NewFileStore(filename string) *FileStore {
+	return &FileStore{filename: filename}	
+}
+
+func (store *FileStore) Read() ([]byte, error) {
+	if filepath.Ext(store.filename) != ".json" {
 		return nil, errors.New("это не .json файл")
 	}
 
-	data, err := os.ReadFile(name)
+	data, err := os.ReadFile(store.filename)
 	if err != nil {
 		return nil, err
 	}
@@ -25,8 +33,8 @@ func ReadFile(name string) ([]byte, error) {
 	return data, nil
 }
 
-func WriteFile(content []byte, name string) error{
-	file, err := os.Create(name)
+func (store *FileStore) Write(content []byte) error {
+	file, err := os.Create(store.filename)
 	if err != nil {
 		return err
 	}
