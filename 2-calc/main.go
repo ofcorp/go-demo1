@@ -8,19 +8,21 @@ import (
 	"strings"
 )
 
+
+
 func main() {
-	fmt.Println("Калькулятор")
-	operation := userInputOperation()
-	numbers := userInputNumbers()
-	switch operation {
-	case "AVG":
+
+	operationsMap := map[string]func([]int){
+	"AVG": func(numbers []int) {
 		sum := sumNumbers(numbers)
 		avg := float64(sum) / float64(len(numbers))
 		fmt.Printf("Среднее значение: %.2f\n", avg)
-	case "SUM":
+	},
+	"SUM": func(numbers []int) {
 		sum := sumNumbers(numbers)
 		fmt.Printf("Сумма: %d\n", sum)
-	case "MED":
+	},
+	"MED": func(numbers []int) {
 		sorted := make([]int, len(numbers))
 		copy(sorted, numbers)
 		for i := 0; i < len(sorted)-1; i++ {
@@ -38,7 +40,13 @@ func main() {
 			median = float64(sorted[mid])
 		}
 		fmt.Printf("Медиана: %.2f\n", median)
-	}
+	},
+}
+
+	fmt.Println("Калькулятор")
+	operation := userInputOperation()
+	numbers := userInputNumbers()
+	operationsMap[operation](numbers)
 }
 
 func userInputOperation() string {
