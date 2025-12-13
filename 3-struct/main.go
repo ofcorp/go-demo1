@@ -2,14 +2,24 @@ package main
 
 import (
 	"fmt"
+	"go-demo1/3-struct/api"
 	"go-demo1/3-struct/bins"
+	"go-demo1/3-struct/config"
 	"go-demo1/3-struct/file"
 	"go-demo1/3-struct/storage"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	fmt.Println("Приложение для работы с контейнерами и мусорными баками")
+	fmt.Println("Приложение для работы с Bins")
+	err := godotenv.Load()
+	if err != nil {
+		panic("не удалось найти env файл")
+	}
 	storage := storage.NewStorage(file.NewFileStore("bins.json"))
+	api := api.NewApi(config.NewConfig().Key)
+	fmt.Println("Используемый API ключ:", api.Key)
 Menu:
 	for {
 		showMenu()
